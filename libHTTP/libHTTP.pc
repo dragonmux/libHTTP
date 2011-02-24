@@ -1,0 +1,14 @@
+# libHTTP pkg-config file
+
+prefix=/usr
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include/libHTTP
+
+Name: libHTTP
+Description: libHTTP is a comprehensive HTTP connection and content retrieval library
+Version: 0.0.1
+Requires:
+Conflicts:
+Libs: -L${libdir} -lHTTP
+Cflags: -I${includedir}

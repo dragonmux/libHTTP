@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual C++ Express 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libHTTP", "libHTTP\libHTTP.vcproj", "{E60243FE-41E9-456E-860C-FADD97A67907}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libHTTPTest", "libHTTPTest\libHTTPTest.vcproj", "{1E6C14FF-9F09-462A-A94C-46E36E9E0491}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E60243FE-41E9-456E-860C-FADD97A67907} = {E60243FE-41E9-456E-860C-FADD97A67907}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E60243FE-41E9-456E-860C-FADD97A67907}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E60243FE-41E9-456E-860C-FADD97A67907}.Debug|Win32.Build.0 = Debug|Win32
+		{E60243FE-41E9-456E-860C-FADD97A67907}.Release|Win32.ActiveCfg = Release|Win32
+		{E60243FE-41E9-456E-860C-FADD97A67907}.Release|Win32.Build.0 = Release|Win32
+		{1E6C14FF-9F09-462A-A94C-46E36E9E0491}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1E6C14FF-9F09-462A-A94C-46E36E9E0491}.Debug|Win32.Build.0 = Debug|Win32
+		{1E6C14FF-9F09-462A-A94C-46E36E9E0491}.Release|Win32.ActiveCfg = Release|Win32
+		{1E6C14FF-9F09-462A-A94C-46E36E9E0491}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
