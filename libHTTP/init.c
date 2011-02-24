@@ -5,7 +5,7 @@
 #include "internals.h"
 
 BOOL Initialised = FALSE;
-int httpError = 0;
+long httpError = 0;
 
 /** Initialises the library
  * @return error state of the call, 0 for success, -1 for already initialised, and 1000+ for a Windows Sockets Error

@@ -1,26 +1,21 @@
 #include <stdio.h>
+#include <malloc.h>
+#include <string.h>
 #ifdef _WINDOWS
 #include <conio.h>
 #else
-#include <malloc.h>
 extern int getch();
 #endif
 #include <libHTTP.h>
 
+#ifdef _WINDOWS
+#ifdef strcasecmp
+#undef strcasecmp
+#endif
+#define strcasecmp stricmp
+#endif
+
 char a = 0;
-
-int strcasecmp(const char *s1, const char *s2)
-{
-	while ((tolower(*(unsigned char *) s1) == tolower(*(unsigned char *) s2)))
-	{
-		if (*s1 == '\0' || *s2 == '\0')
-			return 0;
-		s1++;
-		s2++;
-	}
-
-	return tolower(*(unsigned char *) s1) - tolower(*(unsigned char *) s2);
-}
 
 void GetChar()
 {

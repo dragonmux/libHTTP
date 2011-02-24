@@ -12,7 +12,7 @@
 #endif
 
 extern BOOL Initialised;
-extern int httpError;
+extern long httpError;
 
 /* HTTP/1.0 status codes from RFC1945, provided for reference.  */
 /* Successful 2xx.  */
