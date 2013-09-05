@@ -1,0 +1,7 @@
+Debug
+Release
+
+*.o
+libHTTP.a
+libHTTP.pc
+libHTTP.so

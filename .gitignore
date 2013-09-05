@@ -1,0 +1,5 @@
+bin
+
+libHTTP.ncb
+libHTTP.suo
+*.vcproj*.user

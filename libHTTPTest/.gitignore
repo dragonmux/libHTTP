@@ -1,0 +1,6 @@
+Release
+Debug
+
+*.o
+libHTTPTest
+*.out
