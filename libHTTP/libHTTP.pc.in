@@ -10,5 +10,5 @@ Description: libHTTP is a comprehensive HTTP connection and content retrieval li
 Version: 0.0.1
 Requires:
 Conflicts:
-Libs: -L${libdir} -lHTTP -Wl,-rpath,$(libdir}
+Libs: -L${libdir} -lHTTP -Wl,-rpath,${libdir}
 Cflags: -I${includedir}
