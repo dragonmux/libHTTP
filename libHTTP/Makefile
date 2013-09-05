@@ -6,9 +6,10 @@ LFLAGS = -shared -rdynamic $(O) $(LIBS) -Wl,-soname,$(SO) -o $(SO)
 AR = ar cr
 RANLIB = ranlib
 LN = ln -sfT
-LIBDIR ?= /usr/lib
+PREFIX ?= /usr
+LIBDIR ?= $(PREFIX)/lib
 PKGDIR = $(LIBDIR)/pkgconfig
-INCDIR = /usr/include/libHTTP
+INCDIR = $(PREFIX)/include/libHTTP
 INSTALL = install
 INSTALL_FILE = $(INSTALL) -m644
 INSTALL_DIR = $(INSTALL) -m755 -d
@@ -28,13 +29,21 @@ libHTTP.so: $(O)
 	$(RANLIB) $(A)
 	$(CC) $(LFLAGS)
 
-install: all install-headers
+$(LIBDIR):
+	$(INSTALL_DIR) $(LIBDIR)
+
+$(PKGDIR):
+	$(INSTALL_DIR) $(PKGDIR)
+
+$(INCDIR):
+	$(INSTALL_DIR) $(INCDIR)
+
+install: all $(LIBDIR) $(PKGDIR) install-headers
 	$(INSTALL_FILE) $(SO) $(LIBDIR)
 	$(INSTALL_FILE) $(A) $(LIBDIR)
 	$(INSTALL_FILE) $(PC) $(PKGDIR)
 
-install-headers:
-	$(INSTALL_DIR) $(INCDIR)
+install-headers: $(INCDIR)
 	$(INSTALL_FILE) libHTTP.h $(INCDIR)
 
 libHTTP.pc:
