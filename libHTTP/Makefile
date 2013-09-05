@@ -47,7 +47,7 @@ install-headers: $(INCDIR)
 	$(INSTALL_FILE) libHTTP.h $(INCDIR)
 
 libHTTP.pc:
-	$(SHELL) -c "sed -e 's:@LIBDIR@:$(LIBDIR):g' $(IN) > $(PC)"
+	$(SHELL) -c "sed -e 's:@LIBDIR@:$(LIBDIR):g' -e 's:@PREFIX@:$(PREFIX):g' $(IN) > $(PC)"
 
 .c.o:
 	$(CC) $(CFLAGS) $*.c
