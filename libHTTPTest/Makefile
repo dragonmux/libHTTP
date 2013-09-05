@@ -20,8 +20,8 @@ libHTTPTest.out: $(O)
 	$(CHMOD) $(EXE)
 
 install: all
-	$(INSTALL_DIR) ../../bin
-	$(INSTALL) $(EXE) ../../bin/libHTTPTest
+	$(INSTALL_DIR) ../bin
+	$(INSTALL) $(EXE) ../bin/libHTTPTest
 
 .c.o:
 	$(CC) $(CFLAGS) $*.c
