@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <malloc.h>
+#include <inttypes.h>
 
 #ifdef _WINDOWS
 #define snprintf _snprintf
@@ -55,5 +56,7 @@ typedef struct _Address
 	short Port;
 	int method;
 } Address;
+
+extern BOOL tryRecv(SOCKET sock, char *buffer, uint32_t bufferLen, uint32_t *retLen);
 
 #endif /* __INTERNALS_H__ */
