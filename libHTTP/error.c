@@ -14,8 +14,12 @@
 int httpGetError()
 {
 	int ret = httpError;
-	httpError = 0;
 	return ret;
+}
+
+void httpResetError()
+{
+	httpError = 0;
 }
 
 char *httpGetErrorText()
@@ -27,6 +31,7 @@ char *httpGetErrorText()
 #endif
 	int err = httpGetError(), retLen;
 	char *ret;
+	httpResetError();
 	if (err == 0)
 		return "0; No Error.";
 #ifdef _WINDOWS
@@ -35,7 +40,7 @@ char *httpGetErrorText()
 	ret = (char *)malloc(retLen);
 	sprintf(ret, ErrorFormat, err, wsaerr);
 #else
-	perr = sys_errlist[errno];
+	perr = strerror(errno);
 	retLen = snprintf(NULL, 0, ErrorFormat, err, errno, perr) + 1;
 	ret = (char *)malloc(retLen);
 	sprintf(ret, ErrorFormat, err, errno, perr);
