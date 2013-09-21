@@ -2,10 +2,6 @@
 #include "internals.h"
 #include "strutils.h"
 
-#define NewlineCheck \
-	if (memcmp(buff , "\r\n", 2) != 0)\
-		goto HeaderProtoError;
-
 BOOL IsDigit(char x)
 {
 	x -= '0';
@@ -23,54 +19,66 @@ void GetNextDigit(int *dest, char *src)
 	}
 }
 
-Response *httpResponse(Address *URL)
+BOOL ProtoError()
 {
-	static char buff[5] = {0};
-	Response *ret;
+	httpError = httpBadProtoResponse;
+	return FALSE;
+}
+
+BOOL HeaderProtoError()
+{
+	httpError = httpBadProtoHeaderResponse;
+	return FALSE;
+}
+
+BOOL NewlineCheck(const char *buff)
+{
+	if (memcmp(buff , "\r\n", 2) != 0)
+		return HeaderProtoError();
+	return TRUE;
+}
+
+BOOL tryReadHeaders(Address *URL, Response *ret)
+{
+	uint32_t recved;
 	int rtl;
+	static char buff[5] = {0};
 
-	if (Initialised == FALSE)
-	{
-		httpError = httpNotInitialised;
-		return NULL;
-	}
-	if (URL == NULL)
-	{
-		httpError = httpNULLAddress;
-		return NULL;
-	}
-
-	ret = (Response *)malloc(sizeof(Response));
-	memset(ret, 0x00, sizeof(Response));
-	recv(URL->Socket, buff, 5, 0);
+	if (!tryRecv(URL->Socket, buff, 5, &recved) || recved != 5)
+		return FALSE;
 	if (strncmp(buff, "HTTP/", 5) != 0)
-		goto ProtoError;
+		return ProtoError();
 	do
 	{
-		recv(URL->Socket, buff, 1, 0);
+		if (!tryRecv(URL->Socket, buff, 1, &recved) || recved != 1)
+			return FALSE;
 		GetNextDigit(&ret->HTTPMajorVer, buff);
 	}
 	while (IsDigit(buff[0]) == TRUE);
 	if (buff[0] != '.')
-		goto ProtoError;
+		return ProtoError();
 	do
 	{
-		recv(URL->Socket, buff, 1, 0);
+		if (!tryRecv(URL->Socket, buff, 1, &recved) || recved != 1)
+			return FALSE;
 		GetNextDigit(&ret->HTTPMinorVer, buff);
 	}
 	while (IsDigit(buff[0]) == TRUE);
 	if (buff[0] != ' ')
-		goto ProtoError;
-	recv(URL->Socket, buff, 3, 0);
+		return ProtoError();
+	if (!tryRecv(URL->Socket, buff, 3, &recved) || recved != 3)
+		return FALSE;
 	buff[3] = 0;
 	ret->ResponceCode = atoi(buff);
-	recv(URL->Socket, buff, 1, 0);
+	if (!tryRecv(URL->Socket, buff, 1, &recved) || recved != 1)
+		return FALSE;
 	ret->ResponceText = (char *)malloc(1);
 	ret->ResponceText[0] = 0;
 	rtl = 0;
 	do
 	{
-		recv(URL->Socket, buff, 1, 0);
+		if (!tryRecv(URL->Socket, buff, 1, &recved) || recved != 1)
+			return FALSE;
 		if (buff[0] != '\r' && buff[0] != '\n')
 		{
 			ret->ResponceText = (char *)realloc(ret->ResponceText, rtl + 2);
@@ -80,9 +88,11 @@ Response *httpResponse(Address *URL)
 		}
 	}
 	while (buff[0] != '\r' && buff[0] != '\n');
-	recv(URL->Socket, buff + 1, 1, 0);
-	NewlineCheck;
-	ret->Headers = (char **)malloc(0);
+	if (!tryRecv(URL->Socket, buff + 1, 1, &recved) || recved != 1)
+		return FALSE;
+	if (!NewlineCheck(buff))
+		return FALSE;
+	ret->Headers = malloc(0);
 	while (1)
 	{
 		char *Header = malloc(1);
@@ -90,10 +100,11 @@ Response *httpResponse(Address *URL)
 		Header[0] = 0;
 		do
 		{
-			recv(URL->Socket, buff, 1, 0);
+			if (!tryRecv(URL->Socket, buff, 1, &recved) || recved != 1)
+				return FALSE;
 			if (buff[0] != '\r' && buff[0] != '\n')
 			{
-				Header = (char *)realloc(Header, lenHeader + 2);
+				Header = realloc(Header, lenHeader + 2);
 				Header[lenHeader] = buff[0];
 				Header[lenHeader + 1] = 0;
 				lenHeader++;
@@ -105,24 +116,28 @@ Response *httpResponse(Address *URL)
 			if (buff[0] == '\n')
 			{
 				free(Header);
-				goto HeaderProtoError;
+				return HeaderProtoError();
 			}
-			recv(URL->Socket, buff + 1, 1, 0);
-			NewlineCheck;
+			if (!tryRecv(URL->Socket, buff + 1, 1, &recved) || recved != 1)
+				return FALSE;
+			if (!NewlineCheck(buff))
+				return FALSE;
 			break;
 		}
 		else
 		{
 			if (strcasecmp(Header, "Content-Length:") == 0)
 			{
-				recv(URL->Socket, buff, 1, 0);
-				Header = (char *)realloc(Header, lenHeader + 2);
+				if (!tryRecv(URL->Socket, buff, 1, &recved) || recved != 1)
+					return FALSE;
+				Header = realloc(Header, lenHeader + 2);
 				Header[lenHeader] = buff[0];
 				Header[lenHeader + 1] = 0;
 				lenHeader++;
 				do
 				{
-					recv(URL->Socket, buff, 1, 0);
+					if (!tryRecv(URL->Socket, buff, 1, &recved) || recved != 1)
+						return FALSE;
 					if (IsDigit(buff[0]) == TRUE)
 					{
 						Header = (char *)realloc(Header, lenHeader + 2);
@@ -144,7 +159,8 @@ Response *httpResponse(Address *URL)
 					ret->TransferEncodingFound = TRUE;
 				do
 				{
-					recv(URL->Socket, buff, 1, 0);
+					if (!tryRecv(URL->Socket, buff, 1, &recved) || recved != 1)
+						return FALSE;
 					if (buff[0] != '\r' && buff[0] != '\n')
 					{
 						Header = (char *)realloc(Header, lenHeader + 2);
@@ -158,26 +174,40 @@ Response *httpResponse(Address *URL)
 			ret->Headers = (char **)realloc(ret->Headers, sizeof(char *) * (ret->nHeaders + 1));
 			ret->Headers[ret->nHeaders] = Header;
 			ret->nHeaders++;
-			recv(URL->Socket, buff + 1, 1, 0);
-			NewlineCheck;
+			if (!tryRecv(URL->Socket, buff + 1, 1, &recved) || recved != 1)
+				return FALSE;
+			if (!NewlineCheck(buff))
+				return FALSE;
 		}
 	}
 	httpGetContentAsync(URL, ret);
 	//recv(URL->Socket, ret->Content, ret->ContentLen, 0);
+	return TRUE;
+}
 
+Response *httpResponse(Address *URL)
+{
+	Response *ret;
+
+	if (Initialised == FALSE)
+	{
+		httpError = httpNotInitialised;
+		return NULL;
+	}
+	if (URL == NULL)
+	{
+		httpError = httpNULLAddress;
+		return NULL;
+	}
+
+	ret = (Response *)malloc(sizeof(Response));
+	memset(ret, 0x00, sizeof(Response));
+	if (tryReadHeaders(URL, ret) == FALSE)
+	{
+		httpFreeResponse(&ret);
+		return NULL;
+	}
 	return ret;
-
-HeaderProtoError:
-	httpError = httpBadProtoHeaderResponse;
-	goto Error;
-
-ProtoError:
-	httpError = httpBadProtoResponse;
-	goto Error;
-
-Error:
-	httpFreeResponse(&ret);
-	return NULL;
 }
 
 void httpFreeResponse(Response **resp)
