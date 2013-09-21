@@ -2,6 +2,7 @@
 #define __libHTTP_H__
 
 #ifdef _WINDOWS
+#define WIN32_LEAN_AND_MEAN
 #include <winsock2.h>
 #else
 #endif
@@ -25,10 +26,10 @@
 #endif
 #endif
 
+#include <inttypes.h>
 #ifndef _WINDOWS
 	#ifndef BOOL
-		#include <inttypes.h>
-		#define BOOL int32_t
+		#define BOOL uint8_t
 		#define FALSE 0
 		#define TRUE 1
 	#endif
