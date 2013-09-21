@@ -185,35 +185,39 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\connection.c"
+				RelativePath="..\..\libHTTP\connection.c"
 				>
 			</File>
 			<File
-				RelativePath=".\content.c"
+				RelativePath="..\..\libHTTP\content.c"
 				>
 			</File>
 			<File
-				RelativePath=".\error.c"
+				RelativePath="..\..\libHTTP\error.c"
 				>
 			</File>
 			<File
-				RelativePath=".\init.c"
+				RelativePath="..\..\libHTTP\init.c"
 				>
 			</File>
 			<File
-				RelativePath=".\method.c"
+				RelativePath="..\..\libHTTP\internals.c"
 				>
 			</File>
 			<File
-				RelativePath=".\request.c"
+				RelativePath="..\..\libHTTP\method.c"
 				>
 			</File>
 			<File
-				RelativePath=".\response.c"
+				RelativePath="..\..\libHTTP\request.c"
 				>
 			</File>
 			<File
-				RelativePath=".\strutils.c"
+				RelativePath="..\..\libHTTP\response.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libHTTP\strutils.c"
 				>
 			</File>
 		</Filter>
@@ -223,15 +227,15 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\internals.h"
+				RelativePath="..\..\libHTTP\internals.h"
 				>
 			</File>
 			<File
-				RelativePath=".\libHTTP.h"
+				RelativePath="..\..\libHTTP\libHTTP.h"
 				>
 			</File>
 			<File
-				RelativePath=".\strutils.h"
+				RelativePath="..\..\libHTTP\strutils.h"
 				>
 			</File>
 		</Filter>

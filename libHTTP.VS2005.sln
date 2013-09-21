@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual C++ Express 2005
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libHTTP", "libHTTP\libHTTP.vcproj", "{E60243FE-41E9-456E-860C-FADD97A67907}"
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libHTTP", "VS\2005\libHTTP.vcproj", "{E60243FE-41E9-456E-860C-FADD97A67907}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libHTTPTest", "libHTTPTest\libHTTPTest.vcproj", "{1E6C14FF-9F09-462A-A94C-46E36E9E0491}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libHTTPTest", "VS\2005\libHTTPTest.vcproj", "{1E6C14FF-9F09-462A-A94C-46E36E9E0491}"
 	ProjectSection(ProjectDependencies) = postProject
 		{E60243FE-41E9-456E-860C-FADD97A67907} = {E60243FE-41E9-456E-860C-FADD97A67907}
 	EndProjectSection
