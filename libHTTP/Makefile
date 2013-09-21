@@ -14,7 +14,7 @@ INSTALL = install
 INSTALL_FILE = $(INSTALL) -m644
 INSTALL_DIR = $(INSTALL) -m755 -d
 
-O = strutils.o error.o connection.o method.o request.o response.o content.o init.o
+O = strutils.o error.o connection.o method.o request.o response.o content.o internals.o init.o
 SO = libHTTP.so
 A = libHTTP.a
 PC = libHTTP.pc
@@ -65,3 +65,4 @@ request.o: request.c
 responce.o: response.c
 content.o: content.c
 init.o: init.c
+internals.o: internals.c

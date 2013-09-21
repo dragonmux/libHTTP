@@ -91,6 +91,8 @@ typedef enum _httpMethod
 #define httpBadProtoResponse -9
 #define httpBadProtoHeaderResponse -10
 #define httpNULLResponse -11
+#define httpRecvError -12
+#define httpConnClosedError -13
 
 // From init.c
 HTTP_API int httpInit();
