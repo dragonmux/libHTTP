@@ -17,9 +17,9 @@ typedef struct _ChunkedInternals
 	char **Chunks;
 } ChunkedInternals;
 
-int HexToInt(char *Hex)
+uint32_t HexToInt(char *Hex)
 {
-	int i, len = strlen(Hex), ret = 0;
+	uint32_t i, len = strlen(Hex), ret = 0;
 	for (i = 0; i < len; i++)
 	{
 		int t = toupper(Hex[i]) - 0x30; // '0' == 0x30
