@@ -101,6 +101,7 @@ HTTP_API int httpDeinit();
 
 // From error.c
 HTTP_API int httpGetError();
+HTTP_API void httpResetError();
 HTTP_API char *httpGetErrorText();
 
 // From connection.c
