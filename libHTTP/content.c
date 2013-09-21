@@ -10,6 +10,13 @@ typedef struct _ContentInternals
 	Address *URL;
 } ContentInternals;
 
+typedef struct _ChunkedInternals
+{
+	uint32_t nChunks;
+	uint32_t *lenChunks;
+	char **Chunks;
+} ChunkedInternals;
+
 int HexToInt(char *Hex)
 {
 	int i, len = strlen(Hex), ret = 0;
@@ -28,93 +35,122 @@ int HexToInt(char *Hex)
 	return ret;
 }
 
-void *httpContentThread(void *p_resp)
+void freeChunks(ChunkedInternals *chunks)
 {
-	Address *URL;
-	int i;
-	Response *resp = (Response *)p_resp;
-	ContentInternals *Intern = (ContentInternals *)resp->Private;
-	URL = Intern->URL;
-	pthread_mutex_lock(&Intern->mutex);
+	uint32_t i;
+	for (i = 0; i < chunks->nChunks; i++)
+		free(chunks->Chunks[i]);
+	free(chunks->Chunks);
+	free(chunks->lenChunks);
+	free(chunks);
+}
 
-	if (resp->TransferEncodingFound == TRUE)
+BOOL HeaderResponseProtoError(ChunkedInternals *chunks)
+{
+	freeChunks(chunks);
+	httpError = httpBadProtoHeaderResponse;
+	return FALSE;
+}
+
+BOOL tryRecvChunkedContent(Response *resp, Address *URL)
+{
+	uint32_t len, i, read;
+	ChunkedInternals *chunks = malloc(sizeof(ChunkedInternals));
+	if (chunks == NULL)
+		return FALSE;
+	memset(chunks, 0, sizeof(ChunkedInternals));
+
+	free(resp->Content);
+	do
 	{
-		int nChunks = 0, len, *lenChunks = (int *)malloc(0), i;
-		char **Chunks = (char **)malloc(0);
-		free(resp->Content);
+		char *HexLen, r[2];
+		int lenHexLen = 0;
+		HexLen = (char *)malloc(1);
+		HexLen[0] = 0;
 		do
 		{
-			char *HexLen, r[2];
-			int lenHexLen = 0;
-			HexLen = (char *)malloc(1);
-			HexLen[0] = 0;
-			do
+			if (!tryRecv(URL->Socket, r, 1, &read) || read != 1)
+				return HeaderResponseProtoError(chunks);
+			if (r[0] != '\r')
 			{
-				recv(URL->Socket, r, 1, 0);
-				if (r[0] != '\r')
-				{
-					HexLen = (char *)realloc(HexLen, lenHexLen + 2);
-					HexLen[lenHexLen++] = r[0];
-					HexLen[lenHexLen] = 0;
-				}
+				HexLen = realloc(HexLen, lenHexLen + 2);
+				HexLen[lenHexLen++] = r[0];
+				HexLen[lenHexLen] = 0;
 			}
-			while (r[0] != '\r');
-			recv(URL->Socket, &r[1], 1, 0);
-			if (strncmp(r, "\r\n", 2) != 0)
-				goto HeaderProtoError;
-			len = HexToInt(HexLen);
-			if (len != 0)
-			{
-				int i;
-				Chunks = (char **)realloc(Chunks, sizeof(char *) * (nChunks + 1));
-				lenChunks = (int *)realloc(lenChunks, sizeof(int) * (nChunks + 1));
-				Chunks[nChunks] = (char *)malloc(len);
-				lenChunks[nChunks] = len;
-				for (i = 0; i < len; )
-					i += recv(URL->Socket, Chunks[nChunks] + i, len - i, 0);
-				nChunks++;
-			}
-			recv(URL->Socket, r, 2, 0);
-			if (strncmp(r, "\r\n", 2) != 0)
-				goto HeaderProtoError;
 		}
-		while (len != 0);
-		resp->ContentLen = 1;
-		resp->Content = (char *)malloc(1);
-		for (i = 0; i < nChunks; i++)
+		while (r[0] != '\r');
+		if (!tryRecv(URL->Socket, r + 1, 1, &read) || read != 1)
+			return HeaderResponseProtoError(chunks);
+		if (strncmp(r, "\r\n", 2) != 0)
+			return HeaderResponseProtoError(chunks);
+		len = HexToInt(HexLen);
+		if (len != 0)
 		{
-			int len = lenChunks[i];
-			resp->Content = (char *)realloc(resp->Content, resp->ContentLen + len);
-			memcpy(resp->Content + resp->ContentLen - 1, Chunks[i], len);
-			resp->ContentLen += len;
-			free(Chunks[i]);
+			chunks->Chunks = realloc(chunks->Chunks, sizeof(char *) * (chunks->nChunks + 1));
+			chunks->lenChunks = realloc(chunks->lenChunks, sizeof(int) * (chunks->nChunks + 1));
+			chunks->Chunks[chunks->nChunks] = malloc(len);
+			chunks->lenChunks[chunks->nChunks] = len;
+			for (i = 0; i < len; )
+			{
+				if (!tryRecv(URL->Socket, chunks->Chunks[chunks->nChunks] + i, len - i, &read))
+					return HeaderResponseProtoError(chunks);
+				i += read;
+			}
+			chunks->nChunks++;
 		}
-		resp->Content[resp->ContentLen - 1] = 0;
-		free(Chunks);
-		free(lenChunks);
-		pthread_mutex_unlock(&Intern->mutex);
-		return 0;
-
-HeaderProtoError:
-		for (i = 0; i < nChunks; i++)
-			free(Chunks[i]);
-		free(Chunks);
-		free(lenChunks);
-		httpError = httpBadProtoHeaderResponse;
-		goto Error;
+		if (!tryRecv(URL->Socket, r, 2, &read) || read != 2)
+			return HeaderResponseProtoError(chunks);
+		if (strncmp(r, "\r\n", 2) != 0)
+			return HeaderResponseProtoError(chunks);
 	}
+	while (len != 0);
+	resp->ContentLen = 1;
+	resp->Content = malloc(1);
+	for (i = 0; i < chunks->nChunks; i++)
+	{
+		int len = chunks->lenChunks[i];
+		resp->Content = realloc(resp->Content, resp->ContentLen + len);
+		memcpy(resp->Content + resp->ContentLen - 1, chunks->Chunks[i], len);
+		resp->ContentLen += len;
+		free(chunks->Chunks[i]);
+	}
+	resp->Content[resp->ContentLen - 1] = 0;
+	chunks->nChunks = 0;
+	freeChunks(chunks);
+	return TRUE;
+}
+
+BOOL tryRecvContent(Response *resp, Address *URL)
+{
+	if (resp->TransferEncodingFound == TRUE)
+		return tryRecvChunkedContent(resp, URL);
 	else
 	{
+		int i;
+		uint32_t read;
 		for (i = 0; i < resp->ContentLen; )
-			i += recv(URL->Socket, resp->Content + i, resp->ContentLen - i, 0);
+		{
+			if (!tryRecv(URL->Socket, resp->Content + i, resp->ContentLen - i, &read))
+				return FALSE;
+			i += read;
+		}
 	}
+	return TRUE;
+}
 
-	pthread_mutex_unlock(&Intern->mutex);
-	return 0;
+void *httpContentThread(void *p_resp)
+{
+	BOOL res;
+	Response *resp = (Response *)p_resp;
+	ContentInternals *Intern = (ContentInternals *)resp->Private;
 
-Error:
+	pthread_mutex_lock(&Intern->mutex);
+	res = tryRecvContent(resp,Intern->URL);
 	pthread_mutex_unlock(&Intern->mutex);
-	return (void *)httpError;
+	if (res)
+		return 0;
+	else
+		return (void *)httpError;
 }
 
 void httpGetContentAsync(Address *URL, Response *resp)
