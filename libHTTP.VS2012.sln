@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libHTTP", "VS\2012\libHTTP.vcxproj", "{E60243FE-41E9-456E-860C-FADD97A67907}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libHTTPTest", "VS\2012\libHTTPTest.vcxproj", "{1E6C14FF-9F09-462A-A94C-46E36E9E0491}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E60243FE-41E9-456E-860C-FADD97A67907}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E60243FE-41E9-456E-860C-FADD97A67907}.Debug|Win32.Build.0 = Debug|Win32
+		{E60243FE-41E9-456E-860C-FADD97A67907}.Release|Win32.ActiveCfg = Release|Win32
+		{E60243FE-41E9-456E-860C-FADD97A67907}.Release|Win32.Build.0 = Release|Win32
+		{1E6C14FF-9F09-462A-A94C-46E36E9E0491}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1E6C14FF-9F09-462A-A94C-46E36E9E0491}.Debug|Win32.Build.0 = Debug|Win32
+		{1E6C14FF-9F09-462A-A94C-46E36E9E0491}.Release|Win32.ActiveCfg = Release|Win32
+		{1E6C14FF-9F09-462A-A94C-46E36E9E0491}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
