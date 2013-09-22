@@ -94,6 +94,7 @@ typedef enum _httpMethod
 #define httpNULLResponse -11
 #define httpRecvError -12
 #define httpConnClosedError -13
+#define httpOutOfMem -14
 
 // From init.c
 HTTP_API int httpInit();
