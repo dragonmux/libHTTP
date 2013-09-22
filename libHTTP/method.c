@@ -19,7 +19,7 @@
 #include "libHTTP.h"
 #include "internals.h"
 
-static char *Methods[] = 
+static const char *Methods[] =
 {
 	"GET",
 	"HEAD",
@@ -48,7 +48,7 @@ void httpSetMethod(Address *URL, httpMethod Method)
 	URL->method = (int)Method;
 }
 
-char *httpGetMethod(Address *URL)
+const char *httpGetMethod(Address *URL)
 {
 	if (Initialised == FALSE)
 	{

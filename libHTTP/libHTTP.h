@@ -131,7 +131,7 @@ HTTP_API void httpFreeAddress(Address **URL);
 
 // From method.c
 HTTP_API void httpSetMethod(Address *URL, httpMethod Method);
-HTTP_API char *httpGetMethod(Address *URL);
+HTTP_API const char *httpGetMethod(Address *URL);
 
 // From request.c
 HTTP_API void httpRequest(Address *URL);

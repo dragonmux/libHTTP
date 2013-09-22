@@ -23,7 +23,8 @@
 
 void httpRequest(Address *URL)
 {
-	char *request, *method;
+	char *request;
+	const char *method;
 	int reqLen;
 
 	if (Initialised == FALSE)
@@ -39,7 +40,7 @@ void httpRequest(Address *URL)
 
 	method = httpGetMethod(URL);
 	reqLen = snprintf(NULL, 0, REQ_STR, method, URL->ItemLocation, URL->ServerName, URL->Port) + 1;
-	request = (char *)malloc(reqLen);
+	request = malloc(reqLen);
 	sprintf(request, REQ_STR, method, URL->ItemLocation, URL->ServerName, URL->Port);
 	send(URL->Socket, request, reqLen - 1, 0);
 	free(request);
