@@ -134,6 +134,7 @@ BOOL tryRecvContent(Response *resp, Address *URL)
 				return FALSE;
 			i += read;
 		}
+		resp->ContentLen++;
 	}
 	return TRUE;
 }
