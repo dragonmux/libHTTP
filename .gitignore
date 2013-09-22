@@ -1,5 +1,10 @@
 bin
 
-libHTTP.ncb
-libHTTP.suo
+*.ncb
+*.suo
 *.vcproj*.user
+
+VS/2005/Debug
+VS/2005/Release
+VS/2012/Debug
+VS/2012/Release
