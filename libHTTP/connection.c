@@ -2,11 +2,113 @@
 #include "strutils.h"
 #include "internals.h"
 
+typedef struct _LocateInternal
+{
+	char *Proto;
+	char *Server;
+	char *Item;
+} LocateInternal;
+
+BOOL URLError()
+{
+	httpError = httpBadURL;
+	return FALSE;
+}
+
+BOOL ConnProtoError()
+{
+	httpError = httpBadProto;
+	return FALSE;
+}
+
+BOOL DNSError()
+{
+	httpError = httpDNSError;
+	return FALSE;
+}
+
+BOOL tryLocate(char *Addr, Address *ret, LocateInternal *parts)
+{
+	int i;
+	i = poschr(Addr, ':');
+	if (i <= 0)
+		return URLError();
+	parts->Proto = (char *)malloc(i);
+	memset(parts->Proto, 0x00, i);
+	memcpy(parts->Proto, Addr, i - 1);
+	Addr += i;
+	if (Addr[0] != '/')
+		return URLError();
+	Addr++;
+	if (Addr[0] != '/')
+		return URLError();
+	Addr++;
+	i = poschr(Addr, '/');
+	if (i == -1)
+		i = strlen(Addr) + 1;
+	if (i <= 1)
+		return URLError();
+	parts->Server = (char *)malloc(i);
+	memcpy(parts->Server, Addr, i - 1);
+	parts->Server[i - 1] = 0;
+	Addr += i - 1;
+	i = strlen(Addr);
+	if (i == 0)
+	{
+		parts->Item = (char *)malloc(2);
+		memcpy(parts->Item, "/", 2);
+	}
+	else
+	{
+		parts->Item = (char *)malloc(strlen(Addr) + 1);
+		strcpy(parts->Item, Addr);
+	}
+	ret->ItemLocation = parts->Item;
+	parts->Item = NULL;
+	if (strncasecmp(parts->Proto, "http", 4) != 0)
+		return ConnProtoError();
+	else if (parts->Proto[4] == 's')
+		ret->Secure = TRUE;
+	else
+		ret->Secure = FALSE;
+	ret->Protocol = parts->Proto;
+	parts->Proto = NULL;
+	i = poschr(parts->Server, ':');
+	if (i == -1)
+		ret->Port = (ret->Secure == TRUE ? 443 : 80);
+	else
+	{
+		char *tmp = (char *)malloc(i);
+		if (parts->Server[i] == 0)
+			ret->Port = (ret->Secure == TRUE ? 443 : 80);
+		else
+			ret->Port = (short)atoi(parts->Server + i);
+		memcpy(tmp, parts->Server, i);
+		tmp[i - 1] = 0;
+		free(parts->Server);
+		parts->Server = tmp;
+	}
+	ret->ServerName = parts->Server;
+	parts->Server = NULL;
+
+	ret->Server = (struct hostent *)malloc(sizeof(struct hostent));
+	if (ret->Server == NULL)
+		return DNSError();
+	{
+		struct hostent *host = gethostbyname(ret->ServerName);
+		if (host == NULL)
+			return DNSError();
+		memcpy(ret->Server, host, sizeof(struct hostent));
+	}
+
+	httpError = httpNone;
+	return TRUE;
+}
+
 Address *httpLocate(char *URL)
 {
 	Address *ret;
-	char *Proto = NULL, *Server = NULL, *Item = NULL, *Addr = URL;
-	int i;
+	LocateInternal parts;
 	if (URL == NULL)
 	{
 		httpError = httpBadURL;
@@ -19,94 +121,26 @@ Address *httpLocate(char *URL)
 	}
 
 	ret = (Address *)malloc(sizeof(Address));
-	memset(ret, 0x00, sizeof(Address));
-	i = poschr(Addr, ':');
-	if (i <= 0)
-		goto URLError;
-	Proto = (char *)malloc(i);
-	memset(Proto, 0x00, i);
-	memcpy(Proto, Addr, i - 1);
-	Addr += i;
-	if (Addr[0] != '/')
-		goto URLError;
-	Addr++;
-	if (Addr[0] != '/')
-		goto URLError;
-	Addr++;
-	i = poschr(Addr, '/');
-	if (i == -1)
-		i = strlen(Addr) + 1;
-	if (i <= 1)
-		goto URLError;
-	Server = (char *)malloc(i);
-	memcpy(Server, Addr, i - 1);
-	Server[i - 1] = 0;
-	Addr += i - 1;
-	i = strlen(Addr);
-	if (i == 0)
+	if (ret == NULL)
 	{
-		Item = (char *)malloc(2);
-		memcpy(Item, "/", 2);
+		httpError = httpOutOfMem;
+		return NULL;
 	}
-	else
+	memset(ret, 0, sizeof(Address));
+	memset(&parts, 0, sizeof(LocateInternal));
+	if (!tryLocate(URL, ret, &parts))
 	{
-		Item = (char *)malloc(strlen(Addr) + 1);
-		strcpy(Item, Addr);
+		free(parts.Proto);
+		free(parts.Server);
+		free(parts.Item);
+		free(ret->Server);
+		free(ret->ServerName);
+		free(ret->ItemLocation);
+		free(ret->Protocol);
+		free(ret);
+		return NULL;
 	}
-	ret->ItemLocation = Item;
-	if (strncasecmp(Proto, "http", 4) != 0)
-		goto ProtoError;
-	else if (Proto[4] == 's')
-		ret->Secure = TRUE;
-	else
-		ret->Secure = FALSE;
-	ret->Protocol = Proto;
-	i = poschr(Server, ':');
-	if (i == -1)
-		ret->Port = (ret->Secure == TRUE ? 443 : 80);
-	else
-	{
-		char *tmp = (char *)malloc(i);
-		if (Server[i] == 0)
-			ret->Port = (ret->Secure == TRUE ? 443 : 80);
-		else
-			ret->Port = (short)atoi(Server + i);
-		memcpy(tmp, Server, i);
-		tmp[i - 1] = 0;
-		free(Server);
-		Server = tmp;
-	}
-	ret->ServerName = Server;
-
-	{
-		struct hostent *host = gethostbyname(Server);
-		ret->Server = (struct hostent *)malloc(sizeof(struct hostent));
-		memcpy(ret->Server, host, sizeof(struct hostent));
-	}
-	if (ret->Server == NULL)
-		goto DNSError;
-	httpError = httpNone;
 	return ret;
-
-URLError:
-	httpError = httpBadURL;
-	goto Error;
-
-ProtoError:
-	httpError = httpBadProto;
-	goto Error;
-
-DNSError:
-	httpError = httpDNSError;
-	goto Error;
-
-Error:
-	free(ret->Server);
-	free(ret->ServerName);
-	free(ret->ItemLocation);
-	free(ret->Protocol);
-	free(ret);
-	return NULL;
 }
 
 void httpConnect(Address *URL)
