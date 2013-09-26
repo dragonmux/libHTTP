@@ -91,7 +91,6 @@ BOOL tryReadHeaders(Address *URL, Response *ret)
 	if (!tryRecv(URL->Socket, buff, 1, &recved) || recved != 1)
 		return FALSE;
 	ret->ResponceText = (char *)malloc(1);
-	ret->ResponceText[0] = 0;
 	rtl = 0;
 	do
 	{
@@ -105,7 +104,7 @@ BOOL tryReadHeaders(Address *URL, Response *ret)
 		}
 	}
 	while (buff[0] != '\r' && buff[0] != '\n');
-	ret->ResponceText[rtl + 1] = 0;
+	ret->ResponceText[rtl] = 0;
 	if (!tryRecv(URL->Socket, buff + 1, 1, &recved) || recved != 1)
 		return FALSE;
 	if (!NewlineCheck(buff))
@@ -128,7 +127,7 @@ BOOL tryReadHeaders(Address *URL, Response *ret)
 			}
 		}
 		while (buff[0] != ':' && buff[0] != '\r' && buff[0] != '\n');
-		Header[lenHeader + 1] = 0;
+		Header[lenHeader] = 0;
 		if (buff[0] == '\r' || buff[0] == '\n' && lenHeader == 0)
 		{
 			if (buff[0] == '\n')
@@ -164,7 +163,7 @@ BOOL tryReadHeaders(Address *URL, Response *ret)
 					GetNextDigit(&ret->ContentLen, buff);
 				}
 				while (IsDigit(buff[0]) == TRUE);
-				Header[lenHeader + 1] = 0;
+				Header[lenHeader] = 0;
 				if (ret->Content != NULL)
 					free(ret->Content);
 				ret->Content = (char *)malloc(ret->ContentLen + 1);
@@ -186,7 +185,7 @@ BOOL tryReadHeaders(Address *URL, Response *ret)
 					}
 				}
 				while (buff[0] != '\r' && buff[0] != '\n');
-				Header[lenHeader + 1] = 0;
+				Header[lenHeader] = 0;
 			}
 			ret->Headers = (char **)realloc(ret->Headers, sizeof(char *) * (ret->nHeaders + 1));
 			ret->Headers[ret->nHeaders] = Header;
