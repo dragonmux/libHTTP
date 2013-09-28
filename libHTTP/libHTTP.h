@@ -52,7 +52,7 @@
 		#define TRUE 1
 	#endif
 
-	// Unix sockets
+	/* Unix sockets */
 	#include <sys/socket.h>
 	#ifndef SOCKET
 		typedef int32_t SOCKET;
@@ -114,33 +114,33 @@ typedef enum _httpMethod
 #define httpConnClosedError -13
 #define httpOutOfMem -14
 
-// From init.c
+/* From init.c */
 HTTP_API int httpInit();
 HTTP_API int httpDeinit();
 
-// From error.c
+/* From error.c */
 HTTP_API int httpGetError();
 HTTP_API void httpResetError();
 HTTP_API char *httpGetErrorText();
 
-// From connection.c
+/* From connection.c */
 HTTP_API Address *httpLocate(char *URL);
 HTTP_API void httpConnect(Address *URL);
 HTTP_API void httpDisconnect(Address *URL);
 HTTP_API void httpFreeAddress(Address **URL);
 
-// From method.c
+/* From method.c */
 HTTP_API void httpSetMethod(Address *URL, httpMethod Method);
 HTTP_API const char *httpGetMethod(Address *URL);
 
-// From request.c
+/* From request.c */
 HTTP_API void httpRequest(Address *URL);
 
-// From response.c
+/* From response.c */
 HTTP_API Response *httpResponse(Address *URL);
 HTTP_API void httpFreeResponse(Response **resp);
 
-// From content.c
+/* From content.c */
 HTTP_API void httpGetContentAsync(Address *URL, Response *resp);
 HTTP_API void httpWaitForContent(Response *resp);
 
